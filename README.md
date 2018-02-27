@@ -1,2 +1,7 @@
-# integration-tests
-Integration tests for replicator data pipelines
+Integrations tests and related tooling for the mysql-time-machine pipelines.
+
+Run with:
+
+```
+    mvn test -Pit
+```
