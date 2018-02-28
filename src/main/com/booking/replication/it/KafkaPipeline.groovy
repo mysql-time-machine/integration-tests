@@ -5,7 +5,6 @@ import groovy.sql.Sql
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.BindMode
-import org.testcontainers.containers.FixedHostPortGenericContainer
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.images.RemoteDockerImage
@@ -58,13 +57,7 @@ public class KafkaPipeline {
                 .withExposedPorts(ZOOKEEPER_PORT)
         ;
 
-        kafka = new FixedHostPortGenericContainer("wurstmeister/kafka:1.0.0")
-                .withNetwork(network)
-                .withNetworkAliases("kafka")
-                .withEnv("KAFKA_ZOOKEEPER_CONNECT", "zookeeper:2181")
-                .withEnv("KAFKA_CREATE_TOPICS", "replicator_test_kafka:1:1,replicator_validation:1:1")
-                .withExposedPorts(9092)
-        ;
+        kafka = new ReplicatorKafkaContainer(network);
 
         graphite = new GenericContainer("hopsoft/graphite-statsd:latest")
                 .withNetwork(network)
@@ -78,8 +71,7 @@ public class KafkaPipeline {
                 .withClasspathResourceMapping(
                 "replicator-conf.yaml",
                 "/replicator/replicator-conf.yaml",
-                BindMode.READ_ONLY
-        )
+                BindMode.READ_ONLY)
         ;
 
     }
@@ -87,28 +79,6 @@ public class KafkaPipeline {
     public KafkaPipeline sleep(long ms) {
         logger.info("Sleep for " + ms + " ms...")
         Thread.sleep(ms);
-        return this
-    }
-
-    public KafkaPipeline startReplication() {
-
-        def thread = Thread.start {
-
-            def result = replicator.execInContainer(
-                    "java",
-                    "-jar", "/replicator/mysql-replicator.jar",
-                    "--applier", "kafka",
-                    "--schema", "test",
-                    "--binlog-filename", "binlog.000001",
-                    "--config-path", "/replicator/replicator-conf.yaml"
-            );
-
-            logger.debug(result.stderr.toString());
-            logger.debug(result.stdout.toString());
-        }
-
-        replicatorCmdHandle = thread
-
         return this
     }
 
@@ -172,6 +142,30 @@ public class KafkaPipeline {
         return prop;
     }
 
+    // TODO: move to replicator container class
+    public KafkaPipeline startReplication() {
+
+        def thread = Thread.start {
+
+            def result = replicator.execInContainer(
+                    "java",
+                    "-jar", "/replicator/mysql-replicator.jar",
+                    "--applier", "kafka",
+                    "--schema", "test",
+                    "--binlog-filename", "binlog.000001",
+                    "--config-path", "/replicator/replicator-conf.yaml"
+            );
+
+            logger.debug(result.stderr.toString());
+            logger.debug(result.stdout.toString());
+        }
+
+        replicatorCmdHandle = thread
+
+        return this
+    }
+
+    // TODO: move to test code
     def readRowsFromKafka() {
 
         def allRows = []
@@ -184,6 +178,7 @@ public class KafkaPipeline {
                 "--timeout-ms", "10000",
                 "--from-beginning"
         )
+
 
         def messages = result.getStdout()
 
@@ -215,6 +210,7 @@ public class KafkaPipeline {
         return allRows;
     }
 
+    // TODO: move to tests
     public KafkaPipeline InsertTestRowsToMySQL() {
 
         def urlReplicant = 'jdbc:mysql://' + this.getMySqlIP() + ":" + this.getMySqlPort() + '/test'
