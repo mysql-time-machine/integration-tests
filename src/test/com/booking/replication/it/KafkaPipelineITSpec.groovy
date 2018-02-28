@@ -1,7 +1,7 @@
 package com.booking.replication.it
 
 import groovy.json.JsonSlurper
-
+import org.junit.Test
 import org.junit.rules.*
 
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ class KafkaPipelineITSpec extends  Specification {
                     .InsertTestRowsToMySQL()
                     .sleep(10000)
                     .startReplication() // TODO: add wait for readiness check
-                    .sleep(60000)
+                    .sleep(60000)   // accounts for time to startup + 30s forceFlush interval
                     .readRowsFromKafka().collect{
                         it.get(0) + "|" +
                         it.get(1) + "|" +
@@ -44,9 +44,11 @@ class KafkaPipelineITSpec extends  Specification {
                         it.get(3)
                     }
         expected << [
-                "A|1|665726|PZBAAQSVoSxxFassEAQ",
-                "B|2|49070|cvjIXQiWLegvLs kXaKH",
-                "C|3|437616|pjFNkiZExAiHkKiJePMp"
+                "A|1|665726|PZBAAQSVoSxxFassQEAQ",
+                "B|2|490705|cvjIXQiWLegvLs kXaKH",
+                "C|3|437616|pjFNkiZExAiHkKiJePMp",
+                "D|4|537616|SjFNkiZExAiHkKiJePMp",
+                "E|5|637616|ajFNkiZExAiHkKiJePMp"
         ]
     }
 }

@@ -85,6 +85,7 @@ public class KafkaPipeline {
     }
 
     public KafkaPipeline sleep(long ms) {
+        logger.info("Sleep for " + ms + " ms...")
         Thread.sleep(ms);
         return this
     }
@@ -102,8 +103,8 @@ public class KafkaPipeline {
                     "--config-path", "/replicator/replicator-conf.yaml"
             );
 
-            logger.info(result.stderr.toString());
-            logger.info(result.stdout.toString());
+            logger.debug(result.stderr.toString());
+            logger.debug(result.stdout.toString());
         }
 
         replicatorCmdHandle = thread
@@ -173,6 +174,8 @@ public class KafkaPipeline {
 
     def readRowsFromKafka() {
 
+        def allRows = []
+
         def result = kafka.execInContainer(
                 "/opt/kafka/bin/kafka-console-consumer.sh",
                 "--new-consumer",
@@ -184,29 +187,32 @@ public class KafkaPipeline {
 
         def messages = result.getStdout()
 
-        logger.info("raw kafka => " + messages.toString())
-
         def jsonSlurper = new JsonSlurper()
 
-        def messageEntries = jsonSlurper.parseText(messages)
+        messages.eachLine { line ->
 
-        def inserts =
-                messageEntries['rows'].findAll {
-                    it["eventType"] == "INSERT"
-                }
+            logger.debug("message => " + line.toString())
 
-        def rows = inserts.collect {
-            [
-                    it["eventColumns"]["pk_part_1"]["value"],
-                    it["eventColumns"]["pk_part_2"]["value"],
-                    it["eventColumns"]["randomint"]["value"],
-                    it["eventColumns"]["randomvarchar"]["value"]
-            ]
+            def messageEntries = jsonSlurper.parseText(line)
+
+            def inserts =
+                    messageEntries['rows'].findAll {
+                        it["eventType"] == "INSERT"
+                    }
+
+            def rows = inserts.collect {
+                [
+                        it["eventColumns"]["pk_part_1"]["value"],
+                        it["eventColumns"]["pk_part_2"]["value"],
+                        it["eventColumns"]["randomint"]["value"],
+                        it["eventColumns"]["randomvarchar"]["value"]
+                ]
+            }
+
+            rows.each{ row -> allRows.add(row) }
         }
 
-        logger.info("got rows from kafka => " + rows.toString())
-
-        return rows;
+        return allRows;
     }
 
     public KafkaPipeline InsertTestRowsToMySQL() {
@@ -214,7 +220,7 @@ public class KafkaPipeline {
         def urlReplicant = 'jdbc:mysql://' + this.getMySqlIP() + ":" + this.getMySqlPort() + '/test'
         def urlActiveSchema = 'jdbc:mysql://' + this.getMySqlIP() + ":" + this.getMySqlPort() + '/test_active_schema'
 
-        logger.info("jdbc url: " + urlReplicant)
+        logger.debug("jdbc url: " + urlReplicant)
 
         def dbReplicant = [
                 url     : urlReplicant,
@@ -261,19 +267,22 @@ CREATE TABLE IF NOT EXISTS
     ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 """
 
-        replicant.execute("reset master")
         replicant.execute(sqlCreate);
         replicant.commit();
 
-        activeSchema.execute("reset master")
         activeSchema.execute(sqlCreate);
         activeSchema.commit();
 
+        replicant.execute("reset master")
+        activeSchema.execute("reset master")
+
         // INSERT
         def testRows = [
-                ['A', '1', '665726', 'PZBAAQSVoSxxFassEAQ'],
-                ['B', '2', '49070', 'cvjIXQiWLegvLs kXaKH'],
-                ['C', '3', '437616', 'pjFNkiZExAiHkKiJePMp']
+                ['A', '1', '665726', 'PZBAAQSVoSxxFassQEAQ'],
+                ['B', '2', '490705', 'cvjIXQiWLegvLs kXaKH'],
+                ['C', '3', '437616', 'pjFNkiZExAiHkKiJePMp'],
+                ['D', '4', '537616', 'SjFNkiZExAiHkKiJePMp'],
+                ['E', '5', '637616', 'ajFNkiZExAiHkKiJePMp']
         ]
 
         testRows.each {
@@ -302,7 +311,7 @@ CREATE TABLE IF NOT EXISTS
                 }
         }
 
-        // SELECT
+        // SELECT CHECK
         def resultSet = []
         replicant.eachRow('select * from sometable') {
             row ->
@@ -314,7 +323,7 @@ CREATE TABLE IF NOT EXISTS
                 ])
         }
 
-        logger.info("retrieved from MySQL: " + prettyPrint(toJson(resultSet)))
+        logger.debug("retrieved from MySQL: " + prettyPrint(toJson(resultSet)))
 
         replicant.close()
         activeSchema.close()
