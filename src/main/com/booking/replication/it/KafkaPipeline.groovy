@@ -57,7 +57,7 @@ public class KafkaPipeline {
                 .withExposedPorts(ZOOKEEPER_PORT)
         ;
 
-        kafka = new ReplicatorKafkaContainer(network);
+        kafka = new KafkaContainer(network);
 
         graphite = new GenericContainer("hopsoft/graphite-statsd:latest")
                 .withNetwork(network)
@@ -94,7 +94,6 @@ public class KafkaPipeline {
     public void shutdown() {
 
         replicator.stop();
-
         // replicatorCmdHandle.join();
 
         graphite.stop();
@@ -156,8 +155,8 @@ public class KafkaPipeline {
                     "--config-path", "/replicator/replicator-conf.yaml"
             );
 
-            logger.debug(result.stderr.toString());
-            logger.debug(result.stdout.toString());
+            logger.info(result.stderr.toString());
+            logger.info(result.stdout.toString());
         }
 
         replicatorCmdHandle = thread
@@ -165,20 +164,12 @@ public class KafkaPipeline {
         return this
     }
 
-    // TODO: move to test code
+    // TODO: move to tests
     def readRowsFromKafka() {
 
         def allRows = []
 
-        def result = kafka.execInContainer(
-                "/opt/kafka/bin/kafka-console-consumer.sh",
-                "--new-consumer",
-                "--bootstrap-server", "localhost:9092",
-                "--topic", "replicator_test_kafka",
-                "--timeout-ms", "10000",
-                "--from-beginning"
-        )
-
+        def result = kafka.readMessagesFromKafkaTopic("replicator_test_kafka",10000);
 
         def messages = result.getStdout()
 

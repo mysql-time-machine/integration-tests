@@ -13,6 +13,7 @@ import spock.lang.Specification
 
 @GrabConfig(systemClassLoader = true)
 import groovy.sql.Sql
+import sun.jvm.hotspot.runtime.Thread
 
 import static groovy.json.JsonOutput.*
 
