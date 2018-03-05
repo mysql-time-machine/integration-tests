@@ -10,6 +10,7 @@ import org.testcontainers.containers.Network;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer> {
 
@@ -45,5 +46,18 @@ public class KafkaContainer extends FixedHostPortGenericContainer<KafkaContainer
                 "--from-beginning"
         );
 
+    }
+
+    public static Properties getKafkaConsumerProperties(String broker) {
+        // Consumer configuration
+        Properties prop = new Properties();
+        prop.put("bootstrap.servers", broker);
+        prop.put("group.id", "testGroup");
+        prop.put("auto.offset.reset", "latest");
+        prop.put("enable.auto.commit", "false");
+        prop.put("session.timeout.ms", "30000");
+        prop.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        prop.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        return prop;
     }
 }

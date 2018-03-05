@@ -27,7 +27,7 @@ class KafkaPipelineITSpec extends  Specification {
     ]
 
     def setupSpec() {
-        pipeline.startReplication()
+        pipeline.replicator.startReplication(pipeline)
     }
 
     def cleanupSpec() {
@@ -42,9 +42,8 @@ class KafkaPipelineITSpec extends  Specification {
 
         where:
         result << pipeline
-                    .exec({
-                        sleep(10000)
-                    })
+
+                    .sleep(10000)
 
                     .exec({
                         tests.forEach{ test -> test.doMySqlOperations(pipeline) }
@@ -58,6 +57,7 @@ class KafkaPipelineITSpec extends  Specification {
                         it.get(2) + "|" +
                         it.get(3)
                     }
+
         expected << [
                 "A|1|665726|PZBAAQSVoSxxFassQEAQ",
                 "B|2|490705|cvjIXQiWLegvLs kXaKH",

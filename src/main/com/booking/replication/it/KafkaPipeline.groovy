@@ -50,14 +50,7 @@ public class KafkaPipeline {
                 .withExposedPorts(80)
         ;
 
-        replicator = new GenericContainer(new RemoteDockerImage("replicator-runner:latest"))
-                .withNetwork(network)
-                .withNetworkAliases("replicator")
-                .withClasspathResourceMapping(
-                "replicator-conf.yaml",
-                "/replicator/replicator-conf.yaml",
-                BindMode.READ_ONLY)
-        ;
+        replicator = new ReplicatorContainer("replicator-runner:latest", network)
 
     }
 
@@ -113,41 +106,6 @@ public class KafkaPipeline {
         return graphite.getMappedPort(80);
     }
 
-    public static Properties getKafkaConsumerProperties(String broker) {
-        // Consumer configuration
-        Properties prop = new Properties();
-        prop.put("bootstrap.servers", broker);
-        prop.put("group.id", "testGroup");
-        prop.put("auto.offset.reset", "latest");
-        prop.put("enable.auto.commit", "false");
-        prop.put("session.timeout.ms", "30000");
-        prop.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        prop.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-        return prop;
-    }
-
-    // TODO: move to replicator container class
-    public KafkaPipeline startReplication() {
-
-        def thread = Thread.start {
-
-            def result = replicator.execInContainer(
-                    "java",
-                    "-jar", "/replicator/mysql-replicator.jar",
-                    "--applier", "kafka",
-                    "--schema", "test",
-                    "--binlog-filename", "binlog.000001",
-                    "--config-path", "/replicator/replicator-conf.yaml"
-            );
-
-            logger.info(result.stderr.toString());
-            logger.info(result.stdout.toString());
-        }
-
-        replicatorCmdHandle = thread
-
-        return this
-    }
 
     // TODO: move to tests
     def readRowsFromKafka() {
@@ -191,87 +149,87 @@ public class KafkaPipeline {
         return this;
     }
 
-    // TODO: move to tests
-    public KafkaPipeline InsertTestRowsToMySQL() {
-
-        def replicant = mysql.getReplicantSql()
-        def activeSchema = mysql.getActiveSchemaSql()
-
-        // CREATE
-        def sqlCreate = """
-CREATE TABLE IF NOT EXISTS
-      sometable (
-      pk_part_1         varchar(5) NOT NULL DEFAULT '',
-      pk_part_2         int(11)    NOT NULL DEFAULT 0,
-      randomInt         int(11)             DEFAULT NULL,
-      randomVarchar     varchar(32)         DEFAULT NULL,
-      PRIMARY KEY       (pk_part_1,pk_part_2),
-      KEY randomVarchar (randomVarchar),
-      KEY randomInt     (randomInt)
-    ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-"""
-
-        replicant.execute(sqlCreate);
-        replicant.commit();
-
-        activeSchema.execute(sqlCreate);
-        activeSchema.commit();
-
-        replicant.execute("reset master")
-        activeSchema.execute("reset master")
-
-        // INSERT
-        def testRows = [
-                ['A', '1', '665726', 'PZBAAQSVoSxxFassQEAQ'],
-                ['B', '2', '490705', 'cvjIXQiWLegvLs kXaKH'],
-                ['C', '3', '437616', 'pjFNkiZExAiHkKiJePMp'],
-                ['D', '4', '537616', 'SjFNkiZExAiHkKiJePMp'],
-                ['E', '5', '637616', 'ajFNkiZExAiHkKiJePMp']
-        ]
-
-        testRows.each {
-            row ->
-                try {
-                    def sqlString = """
-                        INSERT INTO
-                            sometable (
-                                pk_part_1,       
-                                pk_part_2,
-                                randomInt,
-                                randomVarchar
-                            )
-                            values (
-                                ${row[0]},
-                                ${row[1]},
-                                ${row[2]},
-                                ${row[3]}
-                            )
-                    """
-
-                    replicant.execute(sqlString)
-                    replicant.commit()
-                } catch (Exception ex) {
-                    replicant.rollback()
-                }
-        }
-
-        // SELECT CHECK
-        def resultSet = []
-        replicant.eachRow('select * from sometable') {
-            row ->
-                resultSet.add([
-                        pk_part_1    : row.pk_part_1,
-                        pk_part_2    : row.pk_part_2,
-                        randomInt    : row.randomInt,
-                        randomVarchar: row.randomVarchar
-                ])
-        }
-
-        logger.debug("retrieved from MySQL: " + prettyPrint(toJson(resultSet)))
-
-        replicant.close()
-        activeSchema.close()
-
-        return this
-    }
+//    // TODO: move to tests
+//    public KafkaPipeline InsertTestRowsToMySQL() {
+//
+//        def replicant = mysql.getReplicantSql()
+//        def activeSchema = mysql.getActiveSchemaSql()
+//
+//        // CREATE
+//        def sqlCreate = """
+//CREATE TABLE IF NOT EXISTS
+//      sometable (
+//      pk_part_1         varchar(5) NOT NULL DEFAULT '',
+//      pk_part_2         int(11)    NOT NULL DEFAULT 0,
+//      randomInt         int(11)             DEFAULT NULL,
+//      randomVarchar     varchar(32)         DEFAULT NULL,
+//      PRIMARY KEY       (pk_part_1,pk_part_2),
+//      KEY randomVarchar (randomVarchar),
+//      KEY randomInt     (randomInt)
+//    ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+//"""
+//
+//        replicant.execute(sqlCreate);
+//        replicant.commit();
+//
+//        activeSchema.execute(sqlCreate);
+//        activeSchema.commit();
+//
+//        replicant.execute("reset master")
+//        activeSchema.execute("reset master")
+//
+//        // INSERT
+//        def testRows = [
+//                ['A', '1', '665726', 'PZBAAQSVoSxxFassQEAQ'],
+//                ['B', '2', '490705', 'cvjIXQiWLegvLs kXaKH'],
+//                ['C', '3', '437616', 'pjFNkiZExAiHkKiJePMp'],
+//                ['D', '4', '537616', 'SjFNkiZExAiHkKiJePMp'],
+//                ['E', '5', '637616', 'ajFNkiZExAiHkKiJePMp']
+//        ]
+//
+//        testRows.each {
+//            row ->
+//                try {
+//                    def sqlString = """
+//                        INSERT INTO
+//                            sometable (
+//                                pk_part_1,
+//                                pk_part_2,
+//                                randomInt,
+//                                randomVarchar
+//                            )
+//                            values (
+//                                ${row[0]},
+//                                ${row[1]},
+//                                ${row[2]},
+//                                ${row[3]}
+//                            )
+//                    """
+//
+//                    replicant.execute(sqlString)
+//                    replicant.commit()
+//                } catch (Exception ex) {
+//                    replicant.rollback()
+//                }
+//        }
+//
+//        // SELECT CHECK
+//        def resultSet = []
+//        replicant.eachRow('select * from sometable') {
+//            row ->
+//                resultSet.add([
+//                        pk_part_1    : row.pk_part_1,
+//                        pk_part_2    : row.pk_part_2,
+//                        randomInt    : row.randomInt,
+//                        randomVarchar: row.randomVarchar
+//                ])
+//        }
+//
+//        logger.debug("retrieved from MySQL: " + prettyPrint(toJson(resultSet)))
+//
+//        replicant.close()
+//        activeSchema.close()
+//
+//        return this
+//    }
 }
