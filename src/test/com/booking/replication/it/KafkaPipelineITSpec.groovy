@@ -1,5 +1,6 @@
 package com.booking.replication.it
 
+import booking.replication.it.TransmitInsertsTest
 import groovy.json.JsonSlurper
 import org.junit.Test
 import org.junit.rules.*
@@ -21,6 +22,14 @@ class KafkaPipelineITSpec extends  Specification {
 
     @Shared KafkaPipeline pipeline = (new KafkaPipeline()).start()
 
+    @Shared tests = [
+            new TransmitInsertsTest()
+    ]
+
+    def setupSpec() {
+        pipeline.startReplication()
+    }
+
     def cleanupSpec() {
         pipeline.shutdown()
     }
@@ -33,11 +42,16 @@ class KafkaPipelineITSpec extends  Specification {
 
         where:
         result << pipeline
-                    .sleep(10000)
-                    .InsertTestRowsToMySQL()
-                    .sleep(10000)
-                    .startReplication() // TODO: add wait for readiness check
-                    .sleep(60000)   // accounts for time to startup + 30s forceFlush interval
+                    .exec({
+                        sleep(10000)
+                    })
+
+                    .exec({
+                        tests.forEach{ test -> test.doMySqlOperations(pipeline) }
+                    })
+
+                    .sleep(60000)   // accounts for time to startup Replicator + 30s forceFlush interval
+
                     .readRowsFromKafka().collect{
                         it.get(0) + "|" +
                         it.get(1) + "|" +

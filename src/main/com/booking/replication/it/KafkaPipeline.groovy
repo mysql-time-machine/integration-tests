@@ -34,22 +34,7 @@ public class KafkaPipeline {
 
         network = Network.newNetwork();
 
-        mysql = new GenericContainer("mysql:5.6.27")
-                .withNetwork(network)
-                .withNetworkAliases("mysql")
-                .withClasspathResourceMapping(
-                "my.cnf",
-                "/etc/mysql/conf.d/my.cnf",
-                BindMode.READ_ONLY
-        )
-                .withClasspathResourceMapping(
-                "mysql_init_dbs.sh",
-                "/docker-entrypoint-initdb.d/mysql_init_dbs.sh",
-                BindMode.READ_ONLY
-        )
-                .withEnv("MYSQL_ROOT_PASSWORD", "mysqlPass")
-                .withExposedPorts(3306)
-        ;
+        mysql = new MySqlContainer(network,"mysql:5.6.27");
 
         zookeeper = new GenericContainer("zookeeper:3.4")
                 .withNetwork(network)
@@ -201,44 +186,16 @@ public class KafkaPipeline {
         return allRows;
     }
 
+    public KafkaPipeline exec(func) {
+        func.call()
+        return this;
+    }
+
     // TODO: move to tests
     public KafkaPipeline InsertTestRowsToMySQL() {
 
-        def urlReplicant = 'jdbc:mysql://' + this.getMySqlIP() + ":" + this.getMySqlPort() + '/test'
-        def urlActiveSchema = 'jdbc:mysql://' + this.getMySqlIP() + ":" + this.getMySqlPort() + '/test_active_schema'
-
-        logger.debug("jdbc url: " + urlReplicant)
-
-        def dbReplicant = [
-                url     : urlReplicant,
-                user    : 'root',
-                password: 'mysqlPass',
-                driver  : 'com.mysql.jdbc.Driver'
-        ]
-
-        def dbActiveSchema = [
-                url     : urlActiveSchema,
-                user    : 'root',
-                password: 'mysqlPass',
-                driver  : 'com.mysql.jdbc.Driver'
-        ]
-
-        def replicant = Sql.newInstance(
-                dbReplicant.url,
-                dbReplicant.user,
-                dbReplicant.password,
-                dbReplicant.driver
-        )
-
-        def activeSchema = Sql.newInstance(
-                dbActiveSchema.url,
-                dbActiveSchema.user,
-                dbActiveSchema.password,
-                dbActiveSchema.driver
-        )
-
-        replicant.connection.autoCommit = false
-        activeSchema.connection.autoCommit = false
+        def replicant = mysql.getReplicantSql()
+        def activeSchema = mysql.getActiveSchemaSql()
 
         // CREATE
         def sqlCreate = """
