@@ -1,6 +1,7 @@
 package booking.replication.it
 
-import com.booking.replication.it.KafkaPipeline;
+import com.booking.replication.it.KafkaPipeline
+import groovy.json.JsonSlurper;
 
 import static groovy.json.JsonOutput.prettyPrint;
 import static groovy.json.JsonOutput.toJson;
@@ -8,12 +9,62 @@ import static groovy.json.JsonOutput.toJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory
 
-/**
- * Created by bdevetak on 3/5/18.
- */
 public class TransmitInsertsTest {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmitInsertsTest.class);
+
+    public List<String> getExpected() {
+        return [
+                "A|1|665726|PZBAAQSVoSxxFassQEAQ",
+                "B|2|490705|cvjIXQiWLegvLs kXaKH",
+                "C|3|437616|pjFNkiZExAiHkKiJePMp",
+                "D|4|537616|SjFNkiZExAiHkKiJePMp",
+                "E|5|637616|ajFNkiZExAiHkKiJePMp"
+        ]
+    }
+
+    public List<String> getReceived(KafkaPipeline pipeline) {
+
+        def allRows = []
+
+        def result = pipeline.kafka.readMessagesFromKafkaTopic("replicator_test_kafka",10000);
+
+        def messages = result.getStdout()
+
+        def jsonSlurper = new JsonSlurper()
+
+        messages.eachLine { line ->
+
+            logger.debug("message => " + line.toString())
+
+            def messageEntries = jsonSlurper.parseText(line)
+
+            def inserts =
+                    messageEntries['rows'].findAll {
+                        it["eventType"] == "INSERT"
+                    }
+
+            def rows = inserts.collect {
+                [
+                        it["eventColumns"]["pk_part_1"]["value"],
+                        it["eventColumns"]["pk_part_2"]["value"],
+                        it["eventColumns"]["randomint"]["value"],
+                        it["eventColumns"]["randomvarchar"]["value"]
+                ]
+            }
+
+            rows.each{ row -> allRows.add(row) }
+        }
+
+        def rowsReceived = allRows.collect {
+            it.get(0) + "|" +
+            it.get(1) + "|" +
+            it.get(2) + "|" +
+            it.get(3)
+        }
+
+        return rowsReceived
+    }
 
     def KafkaPipeline doMySqlOperations(KafkaPipeline pipeline) {
 
