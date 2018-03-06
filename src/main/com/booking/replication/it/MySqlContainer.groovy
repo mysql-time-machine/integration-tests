@@ -1,18 +1,12 @@
-package com.booking.replication.it;
+package com.booking.replication.it
 
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import groovy.json.JsonSlurper;
-import groovy.sql.Sql;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.FixedHostPortGenericContainer;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.Network;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.github.dockerjava.api.command.InspectContainerResponse
+import groovy.sql.Sql
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.testcontainers.containers.BindMode
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.Network
 
 public class MySqlContainer extends GenericContainer<KafkaContainer> {
 
