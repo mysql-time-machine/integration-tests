@@ -30,7 +30,7 @@ public class ReplicatorContainer extends GenericContainer {
         );
     }
 
-    public KafkaPipeline startReplication(KafkaPipeline pipeline) {
+    public ReplicatorPipeline startReplication(ReplicatorPipeline pipeline, String applier) {
 
         Runnable task = () -> {
 
@@ -39,7 +39,7 @@ public class ReplicatorContainer extends GenericContainer {
                 result = this.execInContainer(
                         "java",
                         "-jar", "/replicator/mysql-replicator.jar",
-                        "--applier", "kafka",
+                        "--applier", applier,
                         "--schema", "test",
                         "--binlog-filename", "binlog.000001",
                         "--config-path", "/replicator/replicator-conf.yaml"

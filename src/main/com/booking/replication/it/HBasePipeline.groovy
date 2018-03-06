@@ -8,7 +8,7 @@ class HBasePipeline extends ReplicatorPipeline {
     public HBasePipeline() {
 
         super()
-        outputContainer = new KafkaContainer(network)
+        outputContainer = new HBaseContainer(network)
 
     }
 }

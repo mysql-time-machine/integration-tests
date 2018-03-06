@@ -1,6 +1,7 @@
 package booking.replication.it
 
 import com.booking.replication.it.KafkaPipeline
+import com.booking.replication.it.ReplicatorPipeline
 import groovy.json.JsonSlurper;
 
 import static groovy.json.JsonOutput.prettyPrint;
@@ -23,11 +24,11 @@ public class TransmitInsertsTest {
         ]
     }
 
-    public List<String> getReceived(KafkaPipeline pipeline) {
+    public List<String> getReceived(ReplicatorPipeline pipeline) {
 
         def allRows = []
 
-        def result = pipeline.kafka.readMessagesFromKafkaTopic("replicator_test_kafka",10000);
+        def result = pipeline.outputContainer.readMessagesFromKafkaTopic("replicator_test_kafka",10000);
 
         def messages = result.getStdout()
 
@@ -66,7 +67,7 @@ public class TransmitInsertsTest {
         return rowsReceived
     }
 
-    def KafkaPipeline doMySqlOperations(KafkaPipeline pipeline) {
+    def ReplicatorPipeline doMySqlOperations(ReplicatorPipeline pipeline) {
 
         def replicant = pipeline.mysql.getReplicantSql()
 

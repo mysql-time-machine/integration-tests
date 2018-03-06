@@ -21,12 +21,13 @@ import static groovy.json.JsonOutput.*
 class TestRunner extends  Specification {
 
     @Shared KafkaPipeline pipeline = (new KafkaPipeline()).start()
+//    @Shared HBasePipeline pipeline = (new HBasePipeline()).start()
 
     @Shared tests = [
             new TransmitInsertsTest()
     ]
     def setupSpec() {
-        pipeline.replicator.startReplication(pipeline)
+        pipeline.replicator.startReplication(pipeline, "kafka")
     }
 
     def cleanupSpec() {
