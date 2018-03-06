@@ -25,20 +25,8 @@ public class KafkaPipeline extends ReplicatorPipeline {
     public KafkaPipeline() {
 
         super()
-        kafka = new KafkaContainer(network);
-
-    }
-
-    public KafkaPipeline start() {
-        super.start();
-        kafka.start();
-
-        return this;
-    }
-
-    public void shutdown() {
-        super.shutdown()
-        kafka.stop();
+        outputContainer = new KafkaContainer(network)
+        kafka = outputContainer
 
     }
 

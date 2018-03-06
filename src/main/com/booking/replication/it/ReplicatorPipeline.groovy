@@ -15,6 +15,7 @@ public class ReplicatorPipeline {
     public GenericContainer zookeeper;
     public GenericContainer replicator;
     public GenericContainer graphite;
+    public GenericContainer outputContainer;
 
     protected Thread replicatorCmdHandle;
 
@@ -43,6 +44,10 @@ public class ReplicatorPipeline {
 
     }
 
+    public setOutputContainer(GenericContainer c) {
+        outputContainer = c
+    }
+
     public ReplicatorPipeline sleep(long ms) {
         logger.info("Sleep for " + ms + " ms...")
         Thread.sleep(ms);
@@ -54,6 +59,7 @@ public class ReplicatorPipeline {
         zookeeper.start();
         graphite.start();
         replicator.start();
+        outputContainer.start();
 
         return this;
     }
@@ -64,6 +70,7 @@ public class ReplicatorPipeline {
         graphite.stop();
         zookeeper.stop();
         mysql.stop();
+        outputContainer.stop();
 
     }
 
