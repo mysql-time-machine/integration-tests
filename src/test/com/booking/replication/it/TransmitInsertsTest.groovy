@@ -25,7 +25,33 @@ class TransmitInsertsTest extends ReplicatorTest {
                     "E|5|637616|ajFNkiZExAiHkKiJePMp"
             ]
         } else {
-            return ["123"]
+            return [
+                    "0d61f837;C;3|d:pk_part_1|C",
+                    "0d61f837;C;3|d:pk_part_2|3",
+                    "0d61f837;C;3|d:randomint|437616",
+                    "0d61f837;C;3|d:randomvarchar|pjFNkiZExAiHkKiJePMp",
+                    "0d61f837;C;3|d:row_status|I",
+                    "3a3ea00c;E;5|d:pk_part_1|E",
+                    "3a3ea00c;E;5|d:pk_part_2|5",
+                    "3a3ea00c;E;5|d:randomint|637616",
+                    "3a3ea00c;E;5|d:randomvarchar|ajFNkiZExAiHkKiJePMp",
+                    "3a3ea00c;E;5|d:row_status|I",
+                    "7fc56270;A;1|d:pk_part_1|A",
+                    "7fc56270;A;1|d:pk_part_2|1",
+                    "7fc56270;A;1|d:randomint|665726",
+                    "7fc56270;A;1|d:randomvarchar|PZBAAQSVoSxxFassQEAQ",
+                    "7fc56270;A;1|d:row_status|I",
+                    "9d5ed678;B;2|d:pk_part_1|B",
+                    "9d5ed678;B;2|d:pk_part_2|2",
+                    "9d5ed678;B;2|d:randomint|490705",
+                    "9d5ed678;B;2|d:randomvarchar|cvjIXQiWLegvLs kXaKH",
+                    "9d5ed678;B;2|d:row_status|I",
+                    "f623e75a;D;4|d:pk_part_1|D",
+                    "f623e75a;D;4|d:pk_part_2|4",
+                    "f623e75a;D;4|d:randomint|537616",
+                    "f623e75a;D;4|d:randomvarchar|SjFNkiZExAiHkKiJePMp",
+                    "f623e75a;D;4|d:row_status|I"
+            ]
         }
     }
 
@@ -71,13 +97,14 @@ class TransmitInsertsTest extends ReplicatorTest {
 
             return rowsReceived
         } else {
-            def result = pipeline.outputContainer.readData("sometable");
+            def result = pipeline.outputContainer.readData("sometable")
+            def cells = parseHBase(result)
 
-            return [result]
+            return cells.collect {it[1]+"|"+it[2]+"|"+it[4]}
         }
     }
 
-    def ReplicatorPipeline doMySqlOperations(ReplicatorPipeline pipeline) {
+    ReplicatorPipeline doMySqlOperations(ReplicatorPipeline pipeline) {
 
         def replicant = pipeline.mysql.getReplicantSql()
 

@@ -16,10 +16,8 @@ public class HBaseContainer extends FixedHostPortGenericContainer<HBaseContainer
         withNetworkAliases("hbase");
     }
 
-    public String readData(String tableName)
-            throws IOException, InterruptedException {
+    public String readData(String tableName) throws IOException, InterruptedException {
 
-        Thread.sleep(5000);
         ExecResult res = shellCommand("scan 'test:"+tableName+"', {VERSIONS => 20}");
 
         return res.getStdout();

@@ -9,7 +9,7 @@ import spock.lang.Specification
 
 class TestRunner extends  Specification {
 
-    @Shared env = "kafka"
+    @Shared env = "hbase"
 
     @Shared ReplicatorPipeline pipeline = PipelineFactory.getPipeline(env).start()
 
