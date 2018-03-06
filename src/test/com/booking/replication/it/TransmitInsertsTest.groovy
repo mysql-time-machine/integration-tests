@@ -1,8 +1,9 @@
 package booking.replication.it
 
-import com.booking.replication.it.KafkaPipeline
 import com.booking.replication.it.ReplicatorPipeline
-import groovy.json.JsonSlurper;
+import com.booking.replication.it.ReplicatorTest
+import groovy.json.JsonSlurper
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static groovy.json.JsonOutput.prettyPrint;
 import static groovy.json.JsonOutput.toJson;
@@ -10,61 +11,68 @@ import static groovy.json.JsonOutput.toJson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory
 
-public class TransmitInsertsTest {
+class TransmitInsertsTest extends ReplicatorTest {
 
     private static final Logger logger = LoggerFactory.getLogger(TransmitInsertsTest.class);
 
-    public List<String> getExpected() {
-        return [
-                "A|1|665726|PZBAAQSVoSxxFassQEAQ",
-                "B|2|490705|cvjIXQiWLegvLs kXaKH",
-                "C|3|437616|pjFNkiZExAiHkKiJePMp",
-                "D|4|537616|SjFNkiZExAiHkKiJePMp",
-                "E|5|637616|ajFNkiZExAiHkKiJePMp"
-        ]
+    List<String> getExpected(String env) {
+        if (env.equals("kafka")) {
+            return [
+                    "A|1|665726|PZBAAQSVoSxxFassQEAQ",
+                    "B|2|490705|cvjIXQiWLegvLs kXaKH",
+                    "C|3|437616|pjFNkiZExAiHkKiJePMp",
+                    "D|4|537616|SjFNkiZExAiHkKiJePMp",
+                    "E|5|637616|ajFNkiZExAiHkKiJePMp"
+            ]
+        } else {
+            throw new RuntimeException(env + " is to be implemented in this test")
+        }
     }
 
-    public List<String> getReceived(ReplicatorPipeline pipeline) {
+    List<String> getReceived(ReplicatorPipeline pipeline, String env) {
+        if (env.equals("kafka")) {
+            def allRows = []
 
-        def allRows = []
+            def result = pipeline.outputContainer.readMessagesFromKafkaTopic("replicator_test_kafka",10000);
 
-        def result = pipeline.outputContainer.readMessagesFromKafkaTopic("replicator_test_kafka",10000);
+            def messages = result.getStdout()
 
-        def messages = result.getStdout()
+            def jsonSlurper = new JsonSlurper()
 
-        def jsonSlurper = new JsonSlurper()
+            messages.eachLine { line ->
 
-        messages.eachLine { line ->
+                logger.debug("message => " + line.toString())
 
-            logger.debug("message => " + line.toString())
+                def messageEntries = jsonSlurper.parseText(line)
 
-            def messageEntries = jsonSlurper.parseText(line)
+                def inserts =
+                        messageEntries['rows'].findAll {
+                            it["eventType"] == "INSERT"
+                        }
 
-            def inserts =
-                    messageEntries['rows'].findAll {
-                        it["eventType"] == "INSERT"
-                    }
+                def rows = inserts.collect {
+                    [
+                            it["eventColumns"]["pk_part_1"]["value"],
+                            it["eventColumns"]["pk_part_2"]["value"],
+                            it["eventColumns"]["randomint"]["value"],
+                            it["eventColumns"]["randomvarchar"]["value"]
+                    ]
+                }
 
-            def rows = inserts.collect {
-                [
-                        it["eventColumns"]["pk_part_1"]["value"],
-                        it["eventColumns"]["pk_part_2"]["value"],
-                        it["eventColumns"]["randomint"]["value"],
-                        it["eventColumns"]["randomvarchar"]["value"]
-                ]
+                rows.each{ row -> allRows.add(row) }
             }
 
-            rows.each{ row -> allRows.add(row) }
-        }
+            def rowsReceived = allRows.collect {
+                it.get(0) + "|" +
+                        it.get(1) + "|" +
+                        it.get(2) + "|" +
+                        it.get(3)
+            }
 
-        def rowsReceived = allRows.collect {
-            it.get(0) + "|" +
-            it.get(1) + "|" +
-            it.get(2) + "|" +
-            it.get(3)
+            return rowsReceived
+        } else {
+            throw new RuntimeException(env + " to be implemented")
         }
-
-        return rowsReceived
     }
 
     def ReplicatorPipeline doMySqlOperations(ReplicatorPipeline pipeline) {
@@ -133,7 +141,7 @@ public class TransmitInsertsTest {
                 randomInt    : row.randomInt,
                 randomVarchar: row.randomVarchar
             ])
-    }
+        }
 
         logger.debug("retrieved from MySQL: " + prettyPrint(toJson(resultSet)))
 
@@ -141,5 +149,10 @@ public class TransmitInsertsTest {
 
         return pipeline
 
+    }
+
+    @Override
+    boolean does(String env) {
+        return true
     }
 }

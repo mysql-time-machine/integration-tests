@@ -13,7 +13,7 @@ public class ReplicatorPipeline {
 
     public GenericContainer mysql;
     public GenericContainer zookeeper;
-    public GenericContainer replicator;
+    public ReplicatorContainer replicator;
     public GenericContainer graphite;
     public GenericContainer outputContainer;
 
