@@ -25,7 +25,7 @@ class TransmitInsertsTest extends ReplicatorTest {
                     "E|5|637616|ajFNkiZExAiHkKiJePMp"
             ]
         } else {
-            throw new RuntimeException(env + " is to be implemented in this test")
+            return ["123"]
         }
     }
 
@@ -71,7 +71,9 @@ class TransmitInsertsTest extends ReplicatorTest {
 
             return rowsReceived
         } else {
-            throw new RuntimeException(env + " to be implemented")
+            def result = pipeline.outputContainer.readData("sometable");
+
+            return [result]
         }
     }
 
