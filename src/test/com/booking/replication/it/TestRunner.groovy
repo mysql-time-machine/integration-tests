@@ -22,6 +22,9 @@ class TestRunner extends  Specification {
 
     @Shared KafkaPipeline pipeline = (new KafkaPipeline()).start()
 
+    @Shared tests = [
+            new TransmitInsertsTest()
+    ]
     def setupSpec() {
         pipeline.replicator.startReplication(pipeline)
     }
@@ -33,17 +36,16 @@ class TestRunner extends  Specification {
     @Test
     def runTransmitInsertsTest() {
 
-        setup:
-        def test = new TransmitInsertsTest()
-
         when:
-        test.doMySqlOperations(pipeline)
+        tests.forEach({ test -> test.doMySqlOperations(pipeline) })
         pipeline.sleep(40000) // accounts for time to startup Replicator + 30s forceFlush interval
 
         then:
-        def expected = test.getExpected()
-        def received = test.getReceived(pipeline)
+        tests.forEach({ test ->
+            def expected = test.getExpected()
+            def received = test.getReceived(pipeline)
+            assert(expected == received)
+        })
 
-        assert(expected == received)
     }
 }
