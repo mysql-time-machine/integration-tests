@@ -3,7 +3,13 @@ package booking.replication.it
 import com.booking.replication.it.ReplicatorPipeline
 import com.booking.replication.it.ReplicatorTest
 
+/**
+ * This test verifies that we get the payloads injected into transactions and
+ * that we get them in the same order (when sorted by timestamp) in which
+ * transactions were made
+ * */
 class PayloadTest extends ReplicatorTest {
+
     @Override
     boolean does(String env) {
         return env.equals("hbase")
@@ -63,14 +69,14 @@ class PayloadTest extends ReplicatorTest {
         def structuredPayload = structuralHBase(payloadOutput)
 
         def uuids = structured['8b04d5e3;first']['d:_transaction_uuid']
-        def uuidVals = uuids.keySet().sort().collect {
+        def transactionUUIDs = uuids.keySet().sort().collect { // <- get transaction UUIDs sorted by timestamp
             uuids[it]
         }
 
-        def payloadVals = uuidVals.collect { uuid ->
+        def payloadVals = transactionUUIDs.collect { transactionUUID ->
             def r = [:]
-            structuredPayload[uuid].each {k,v ->
-                r[k] = k + "|" + v.values()[0]
+            structuredPayload[transactionUUID].each { columnName,v -> // (k,v) is (columnName, {timestamp => value})
+                r[columnName] = columnName + "|" + v.values()[0] // "column_name|column_value"
             }
             r
         }

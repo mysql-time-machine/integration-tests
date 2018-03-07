@@ -13,6 +13,20 @@ abstract class ReplicatorTest {
         return result.split("\n").drop(1).dropRight(3).collect({ (it =~ / (.*) column=(.*), timestamp=(\d+), value=(.*)/)[0] })
     }
 
+    // make a hash of the form:
+    // {
+    //      row_id => {
+    //          column_name_1 => {
+    //              timestamp_1 => value_1,
+    //              ...
+    //              timestamp_N => value_N,
+    //          },
+    //          ...
+    //          column_name_N => {
+    //
+    //          }
+    //      }
+    // }
     Map structuralHBase(String result) {
         def cells = parseHBase(result)
         def res = [:]
