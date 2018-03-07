@@ -6,6 +6,7 @@ import booking.replication.it.PayloadTest
 import org.junit.Test
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
 @GrabConfig(systemClassLoader = true)
 
@@ -20,30 +21,28 @@ class TestRunner extends  Specification {
             new MicrosecondsTest(),
             new PayloadTest()
     ]
+
     def setupSpec() {
         pipeline.replicator.startReplication(pipeline, env)
+        tests.findAll({it.does(env)}).forEach({ test -> test.doMySqlOperations(pipeline) })
+        pipeline.sleep(40000) // accounts for time to startup Replicator + 30s forceFlush interval
+
     }
 
     def cleanupSpec() {
         pipeline.shutdown()
     }
 
-    @Test
-    def runAllTests() {
+    @Unroll
+    def "#testName: { EXPECTED =>  #expected, RECEIVED => #received }"() {
 
-        setup:
-        def local_tests = tests.findAll({it.does(env)})
+        expect:
+        expected == received
 
-        when:
-        local_tests.forEach({ test -> test.doMySqlOperations(pipeline) })
-        pipeline.sleep(40000) // accounts for time to startup Replicator + 30s forceFlush interval
-
-        then:
-        local_tests.forEach({ test ->
-            def expected = test.getExpected(env)
-            def received = test.getReceived(pipeline, env)
-            assert(expected == received)
-        })
+        where:
+        testName << tests.findAll({it.does(env)}).collect({ test -> test.class.toString().split("\\.").last()})
+        expected << tests.findAll({it.does(env)}).collect({ test -> test.getExpected(env)})
+        received << tests.findAll({it.does(env)}).collect({ test -> test.getReceived(pipeline, env)})
 
     }
 }
