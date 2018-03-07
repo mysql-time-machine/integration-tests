@@ -98,7 +98,7 @@ class TransmitInsertsTest extends ReplicatorTest {
         } else {
             def cells = parseHBase(pipeline.outputContainer.readData("sometable"))
 
-            return cells.collect {it[1]+"|"+it[2]+"|"+it[4]}
+            return cells.findAll {it[2] != 'd:_transaction_uuid' && it[2] != 'd:_replicator_uuid'}. collect {it[1]+"|"+it[2]+"|"+it[4]}
         }
     }
 

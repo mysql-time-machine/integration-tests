@@ -23,8 +23,12 @@ kafka:
 hbase:
     namespace: "test"
     zookeeper_quorum: ["hbase"]
+    apply_uuid: true
     hive_imports:
         tables: ['test1','test2','test3']
+
+payload:
+    table_name: "__payload__"
 
 mysql_failover:
     pgtid:
