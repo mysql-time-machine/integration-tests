@@ -3,7 +3,6 @@ package booking.replication.it
 import com.booking.replication.it.ReplicatorPipeline
 import com.booking.replication.it.ReplicatorTest
 import groovy.json.JsonSlurper
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static groovy.json.JsonOutput.prettyPrint;
 import static groovy.json.JsonOutput.toJson;
@@ -97,8 +96,7 @@ class TransmitInsertsTest extends ReplicatorTest {
 
             return rowsReceived
         } else {
-            def result = pipeline.outputContainer.readData("sometable")
-            def cells = parseHBase(result)
+            def cells = parseHBase(pipeline.outputContainer.readData("sometable"))
 
             return cells.collect {it[1]+"|"+it[2]+"|"+it[4]}
         }

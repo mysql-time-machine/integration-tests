@@ -1,6 +1,7 @@
 package com.booking.replication.it
 
 import booking.replication.it.TransmitInsertsTest
+import booking.replication.it.MicrosecondsTest
 import org.junit.Test
 import spock.lang.Shared
 import spock.lang.Specification
@@ -14,7 +15,8 @@ class TestRunner extends  Specification {
     @Shared ReplicatorPipeline pipeline = PipelineFactory.getPipeline(env).start()
 
     @Shared tests = [
-            new TransmitInsertsTest()
+            new TransmitInsertsTest(),
+            new MicrosecondsTest()
     ]
     def setupSpec() {
         pipeline.replicator.startReplication(pipeline, env)
@@ -25,7 +27,7 @@ class TestRunner extends  Specification {
     }
 
     @Test
-    def runTransmitInsertsTest() {
+    def runAllTests() {
 
         setup:
         def local_tests = tests.findAll({it.does(env)})
