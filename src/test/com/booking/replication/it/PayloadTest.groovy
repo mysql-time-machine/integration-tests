@@ -63,10 +63,10 @@ class PayloadTest extends ReplicatorTest {
 
     List<String> getReceived(ReplicatorPipeline pipeline, String env) {
         def output = pipeline.outputContainer.readData(tableName)
-        def structured = structuralHBase(output)
+        def structured = structureHBaseOutput(output)
 
         def payloadOutput = pipeline.outputContainer.readData(payloadTableName)
-        def structuredPayload = structuralHBase(payloadOutput)
+        def structuredPayload = structureHBaseOutput(payloadOutput)
 
         def uuids = structured['8b04d5e3;first']['d:_transaction_uuid']
         def transactionUUIDs = uuids.keySet().sort().collect { // <- get transaction UUIDs sorted by timestamp

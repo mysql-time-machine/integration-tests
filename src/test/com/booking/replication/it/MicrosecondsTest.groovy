@@ -3,6 +3,11 @@ package booking.replication.it
 import com.booking.replication.it.ReplicatorPipeline
 import com.booking.replication.it.ReplicatorTest
 
+/**
+ * Inserts multiple rows and verifies that the order of
+ * microsecond timestamps in HBase is the same as
+ * the order in which the rows were inserted
+ */
 class MicrosecondsTest extends ReplicatorTest {
     @Override
     boolean does(String env) {
@@ -53,8 +58,8 @@ class MicrosecondsTest extends ReplicatorTest {
 
     List<String> getReceived(ReplicatorPipeline pipeline, String env) {
         def output = pipeline.outputContainer.readData(tableName)
-        def cells = parseHBase(output)
-        def structured = structuralHBase(output)
+        def cells = parseHBaseShellOutput(output)
+        def structured = structureHBaseOutput(output)
 
         def ri = structured['ee11cbb1;user;42']['d:randomint']
         def ri_vals = ri.keySet().sort().collect {

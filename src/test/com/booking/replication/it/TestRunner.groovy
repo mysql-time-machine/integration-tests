@@ -1,9 +1,9 @@
 package com.booking.replication.it
 
+import booking.replication.it.LongTransactionHBaseTest
 import booking.replication.it.TransmitInsertsTest
 import booking.replication.it.MicrosecondsTest
 import booking.replication.it.PayloadTest
-import org.junit.Test
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -19,7 +19,8 @@ class TestRunner extends  Specification {
     @Shared tests = [
             new TransmitInsertsTest(),
             new MicrosecondsTest(),
-            new PayloadTest()
+            new PayloadTest(),
+            new LongTransactionHBaseTest()
     ]
 
     def setupSpec() {
@@ -30,6 +31,7 @@ class TestRunner extends  Specification {
     }
 
     def cleanupSpec() {
+        pipeline.sleep(10000000)
         pipeline.shutdown()
     }
 
