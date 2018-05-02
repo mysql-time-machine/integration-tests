@@ -26,6 +26,7 @@ public class ReplicatorPipeline {
 
         network = Network.newNetwork();
 
+        // TODO: 5.7.21
         mysql = new MySqlContainer(network,"mysql:5.6.27");
 
         zookeeper = new GenericContainer("zookeeper:3.4")

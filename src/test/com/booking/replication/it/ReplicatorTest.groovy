@@ -58,11 +58,11 @@ abstract class ReplicatorTest {
     void createPayloadTable(Sql replicant) {
         def sqlCreate = sprintf('''
         create table if not exists %s (
-        event_id char(6) not null,
-        server_role varchar(255) not null,
-        strange_int int not null,
-        primary key (event_id)
-        ) engine = blackhole
+            event_id char(6) not null,
+            server_role varchar(255) not null,
+            strange_int int not null,
+            primary key (event_id)
+        ) ENGINE = BLACKHOLE
         ''', payloadTableName)
         replicant.execute(sqlCreate)
         replicant.commit()

@@ -16,7 +16,6 @@ public class ReplicatorContainer extends GenericContainer {
 
     private static final Logger logger = LoggerFactory.getLogger(ReplicatorContainer.class);
 
-
     public ReplicatorContainer(String imageTag, Network network) {
 
         super(new RemoteDockerImage(imageTag));
@@ -30,7 +29,8 @@ public class ReplicatorContainer extends GenericContainer {
         );
     }
 
-    public ReplicatorPipeline startReplication(ReplicatorPipeline pipeline, String applier) {
+    // TODO: manage replicator version tests properly with docker tags
+    public ReplicatorPipeline startReplicationFromFirstBinlogFile_V0145(ReplicatorPipeline pipeline, String applier) {
 
         Runnable task = () -> {
 
@@ -38,7 +38,7 @@ public class ReplicatorContainer extends GenericContainer {
             try {
                 result = this.execInContainer(
                         "java",
-                        "-jar", "/replicator/mysql-replicator.jar",
+                        "-jar", "/replicator/mysql-replicator-0.14.5.jar",
                         "--applier", applier,
                         "--schema", "test",
                         "--binlog-filename", "binlog.000001",
@@ -60,4 +60,63 @@ public class ReplicatorContainer extends GenericContainer {
         return pipeline;
     }
 
+    public ReplicatorPipeline startReplicationFromPGTID_V0145(ReplicatorPipeline pipeline, String applier) {
+
+        Runnable task = () -> {
+
+            ExecResult result = null;
+            try {
+                result = this.execInContainer(
+                        "java",
+                        "-jar", "/replicator/mysql-replicator-0.14.5.jar",
+                        "--applier", applier,
+                        "--schema", "test",
+                        "--config-path", "/replicator/replicator-conf.yaml"
+                );
+
+                logger.info(result.getStderr());
+                logger.info(result.getStdout());
+
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        };
+
+        Thread thread = new Thread(task);
+        thread.start();
+
+        return pipeline;
+    }
+
+    public ReplicatorPipeline startReplicationFromFirstBinlogFile_V015(ReplicatorPipeline pipeline, String applier) {
+
+        Runnable task = () -> {
+
+            ExecResult result = null;
+            try {
+                result = this.execInContainer(
+                        "java",
+                        "-jar", "/replicator/mysql-replicator-0.15.0-alpha-SNAPSHOT.jar",
+                        "--parser", "bc",
+                        "--applier", applier,
+                        "--schema", "test",
+                        "--binlog-filename", "binlog.000001",
+                        "--config-path", "/replicator/replicator-conf.yaml"
+                );
+
+                logger.info(result.getStderr());
+                logger.info(result.getStdout());
+
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        };
+
+        Thread thread = new Thread(task);
+        thread.start();
+
+        return pipeline;
+    }
 }

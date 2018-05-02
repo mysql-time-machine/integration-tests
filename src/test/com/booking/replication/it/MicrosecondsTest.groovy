@@ -1,7 +1,10 @@
 package booking.replication.it
 
+import com.booking.replication.it.ReplicatorContainer
 import com.booking.replication.it.ReplicatorPipeline
 import com.booking.replication.it.ReplicatorTest
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Inserts multiple rows and verifies that the order of
@@ -9,6 +12,9 @@ import com.booking.replication.it.ReplicatorTest
  * the order in which the rows were inserted
  */
 class MicrosecondsTest extends ReplicatorTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(MicrosecondsTest.class);
+
     @Override
     boolean does(String env) {
         return env.equals("hbase")
@@ -58,6 +64,7 @@ class MicrosecondsTest extends ReplicatorTest {
 
     List<String> getReceived(ReplicatorPipeline pipeline, String env) {
         def output = pipeline.outputContainer.readData(tableName)
+
         def cells = parseHBaseShellOutput(output)
         def structured = structureHBaseOutput(output)
 

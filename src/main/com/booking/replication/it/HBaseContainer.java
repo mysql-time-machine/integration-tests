@@ -11,7 +11,7 @@ public class HBaseContainer extends FixedHostPortGenericContainer<HBaseContainer
     private static final Logger logger = LoggerFactory.getLogger(HBaseContainer.class);
     public HBaseContainer(Network network) {
 
-        super("harisekhon/hbase:latest");
+        super("harisekhon/hbase-dev:latest");
         withNetwork(network);
         withNetworkAliases("hbase");
     }

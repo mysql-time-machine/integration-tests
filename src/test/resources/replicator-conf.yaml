@@ -24,6 +24,7 @@ hbase:
     namespace: "test"
     zookeeper_quorum: ["hbase"]
     apply_uuid: true
+    use_snappy: false
     hive_imports:
         tables: ['test1','test2','test3']
 
