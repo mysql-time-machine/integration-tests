@@ -17,7 +17,9 @@ class PayloadTest extends ReplicatorTest {
     private tableName = "tpayload"
 
     ReplicatorPipeline doMySqlOperations(ReplicatorPipeline pipeline) {
-        def replicant = pipeline.mysql.getReplicantSql()
+        def replicant = pipeline.mysql.getReplicantSql(
+                false // <- autoCommit
+        )
 
         createPayloadTable(replicant)
 

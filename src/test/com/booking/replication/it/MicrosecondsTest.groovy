@@ -22,7 +22,9 @@ class MicrosecondsTest extends ReplicatorTest {
     private tableName = "tmicros"
 
     ReplicatorPipeline doMySqlOperations(ReplicatorPipeline pipeline) {
-        def replicant = pipeline.mysql.getReplicantSql()
+        def replicant = pipeline.mysql.getReplicantSql(
+            false // <- autoCommit
+        )
 
         // CREATE
         def sqlCreate = sprintf("""

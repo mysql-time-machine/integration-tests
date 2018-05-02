@@ -38,7 +38,7 @@ public class MySqlContainer extends GenericContainer<KafkaContainer> {
         logger.info("mysql container started at { ip: " + getContainerIpAddress() + ", port: " + getMappedPort(3306));
     }
 
-    public Sql getReplicantSql() {
+    public Sql getReplicantSql(boolean autoCommit) {
 
         def urlReplicant = 'jdbc:mysql://' + getContainerIpAddress() + ":" + getMappedPort(3306) + '/test'
 
@@ -58,7 +58,7 @@ public class MySqlContainer extends GenericContainer<KafkaContainer> {
                 dbReplicant.driver
         );
 
-        replicant.connection.autoCommit = false
+        replicant.connection.autoCommit = autoCommit
 
         return replicant;
     }
