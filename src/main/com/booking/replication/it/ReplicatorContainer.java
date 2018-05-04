@@ -89,7 +89,10 @@ public class ReplicatorContainer extends GenericContainer {
         return pipeline;
     }
 
-    public ReplicatorPipeline startReplicationFromFirstBinlogFile_V015(ReplicatorPipeline pipeline, String applier) {
+    public ReplicatorPipeline startReplicationFromFirstBinlogFile_V015(
+            ReplicatorPipeline pipeline,
+            String applier,
+            String parser) {
 
         Runnable task = () -> {
 
@@ -98,7 +101,7 @@ public class ReplicatorContainer extends GenericContainer {
                 result = this.execInContainer(
                         "java",
                         "-jar", "/replicator/mysql-replicator-0.15.0-alpha-SNAPSHOT.jar",
-                        "--parser", "bc",
+                        "--parser", parser,
                         "--applier", applier,
                         "--schema", "test",
                         "--binlog-filename", "binlog.000001",
