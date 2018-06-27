@@ -1,4 +1,4 @@
-package booking.replication.it
+package com.booking.replication.it
 
 import com.booking.replication.it.ReplicatorPipeline
 import com.booking.replication.it.ReplicatorTest
