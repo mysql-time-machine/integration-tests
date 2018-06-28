@@ -7,7 +7,7 @@ import org.testcontainers.containers.Network;
 
 import java.io.IOException;
 
-public class HBaseContainer extends FixedHostPortGenericContainer<HBaseContainer> {
+public class HBaseContainer extends FixedHostPortGenericContainer {
     private static final Logger logger = LoggerFactory.getLogger(HBaseContainer.class);
     public HBaseContainer(Network network) {
 
@@ -17,11 +17,8 @@ public class HBaseContainer extends FixedHostPortGenericContainer<HBaseContainer
     }
 
     public String readData(String tableName) throws IOException, InterruptedException {
-
-        ExecResult res = shellCommand("scan 'test:"+tableName+"', {VERSIONS => 20}");
-
+        ExecResult res = shellCommand("scan 'test:" + tableName + "', {VERSIONS => 20}");
         return res.getStdout();
-
     }
 
     @Override

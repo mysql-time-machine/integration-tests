@@ -38,15 +38,15 @@ public class ReplicatorContainer extends GenericContainer {
             try {
                 result = this.execInContainer(
                         "java",
-                        "-jar", "/replicator/mysql-replicator-0.14.5.jar",
+                        "-jar", "/replicator/mysql-replicator-0.14.6.jar",
                         "--applier", applier,
                         "--schema", "test",
                         "--binlog-filename", "binlog.000001",
                         "--config-path", "/replicator/replicator-conf.yaml"
                 );
 
-                logger.info(result.getStderr());
-                logger.info(result.getStdout());
+                // logger.info(result.getStderr());
+                // logger.info(result.getStdout());
 
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
@@ -96,11 +96,11 @@ public class ReplicatorContainer extends GenericContainer {
 
         Runnable task = () -> {
 
-            ExecResult result = null;
+            ExecResult result;
             try {
                 result = this.execInContainer(
                         "java",
-                        "-jar", "/replicator/mysql-replicator-0.15.0-alpha-SNAPSHOT.jar",
+                        "-jar", "/replicator/mysql-replicator-0.15.0-SNAPSHOT.jar",
                         "--parser", parser,
                         "--applier", applier,
                         "--schema", "test",

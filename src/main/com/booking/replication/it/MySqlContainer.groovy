@@ -8,7 +8,7 @@ import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.Network
 
-public class MySqlContainer extends GenericContainer<KafkaContainer> {
+public class MySqlContainer extends GenericContainer {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaContainer.class);
 

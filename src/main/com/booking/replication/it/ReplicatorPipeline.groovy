@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.Network
 
-public class ReplicatorPipeline {
+class ReplicatorPipeline {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaPipeline.class);
 
