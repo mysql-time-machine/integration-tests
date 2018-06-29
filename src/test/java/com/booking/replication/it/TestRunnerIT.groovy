@@ -8,8 +8,10 @@ import spock.lang.Unroll
 
 class TestRunnerIT extends Specification {
 
+    // options are: "kafka", "hbase"
     @Shared env = "hbase"
 
+    // this encapsulates all containers that form the pipeline
     @Shared ReplicatorPipeline pipeline = PipelineFactory.getPipeline(env).start()
 
     @Shared tests = [
@@ -25,15 +27,18 @@ class TestRunnerIT extends Specification {
         //pipeline.replicator.startReplicationFromFirstBinlogFile_V0145(pipeline, env)
 
         // v015 branch
-      pipeline.replicator.startReplicationFromFirstBinlogFile_V015(pipeline, env, "bc")
+        pipeline.replicator.startReplicationFromFirstBinlogFile_V015(pipeline, env, "bc")
 
-        tests.findAll({it.does(env)}).forEach({ test -> test.doMySqlOperations(pipeline) })
+        tests
+            .findAll({it.does(env)})
+            .forEach({ test -> test.doMySqlOperations(pipeline) })
+
         pipeline.sleep(40000) // accounts for time to startup Replicator + 30s forceFlush interval
 
     }
 
     def cleanupSpec() {
-        //pipeline.sleep(10000000)
+        // pipeline.sleep(10000000)
         pipeline.shutdown()
     }
 
