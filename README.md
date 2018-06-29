@@ -18,4 +18,3 @@ Steps to run
     mvn test
 ```
 
-Notes: 
