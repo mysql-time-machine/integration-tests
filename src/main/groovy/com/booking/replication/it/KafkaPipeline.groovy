@@ -1,17 +1,8 @@
 package com.booking.replication.it
 
-import groovy.json.JsonSlurper
-import groovy.sql.Sql
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.Network
-import org.testcontainers.images.RemoteDockerImage
-
-import static groovy.json.JsonOutput.prettyPrint
-import static groovy.json.JsonOutput.toJson
-
 
 public class KafkaPipeline extends ReplicatorPipeline {
 

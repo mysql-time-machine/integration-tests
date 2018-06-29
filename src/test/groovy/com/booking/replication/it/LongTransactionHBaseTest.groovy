@@ -1,11 +1,7 @@
 package com.booking.replication.it
 
-import com.booking.replication.it.ReplicatorPipeline
-import com.booking.replication.it.ReplicatorTest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-
-import java.lang.reflect.InvocationTargetException
 
 /**
  * Inserts multiple rows in a long transaction and verifies

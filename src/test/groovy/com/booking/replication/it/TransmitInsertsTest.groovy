@@ -1,7 +1,5 @@
 package com.booking.replication.it
 
-import com.booking.replication.it.ReplicatorPipeline
-import com.booking.replication.it.ReplicatorTest
 import groovy.json.JsonSlurper
 
 import static groovy.json.JsonOutput.prettyPrint;

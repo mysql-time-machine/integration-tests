@@ -23,7 +23,7 @@ public class ReplicatorContainer extends GenericContainer {
         withNetwork(network);
         withNetworkAliases("replicator");
         withClasspathResourceMapping(
-            "replicator-conf.yaml",
+                "replicator-conf.yaml",
             "/replicator/replicator-conf.yaml",
             BindMode.READ_ONLY
         );

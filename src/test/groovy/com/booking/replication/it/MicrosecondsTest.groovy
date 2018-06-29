@@ -1,8 +1,5 @@
 package com.booking.replication.it
 
-import com.booking.replication.it.ReplicatorContainer
-import com.booking.replication.it.ReplicatorPipeline
-import com.booking.replication.it.ReplicatorTest
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

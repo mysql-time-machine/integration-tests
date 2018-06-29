@@ -8,7 +8,7 @@ class HBasePipeline extends ReplicatorPipeline {
     public HBasePipeline() {
 
         super()
-        outputContainer = new HBaseContainer(network)
+        outputContainer = new com.booking.replication.it.HBaseContainer(network)
 
     }
 }
