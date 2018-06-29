@@ -21,9 +21,11 @@ class TestRunnerIT extends Specification {
 
     def setupSpec() {
 
-         pipeline.replicator.startReplicationFromFirstBinlogFile_V0145(pipeline, env)
+        // v014 branch
+        //pipeline.replicator.startReplicationFromFirstBinlogFile_V0145(pipeline, env)
 
-//        pipeline.replicator.startReplicationFromFirstBinlogFile_V015(pipeline, env, "bc")
+        // v015 branch
+      pipeline.replicator.startReplicationFromFirstBinlogFile_V015(pipeline, env, "bc")
 
         tests.findAll({it.does(env)}).forEach({ test -> test.doMySqlOperations(pipeline) })
         pipeline.sleep(40000) // accounts for time to startup Replicator + 30s forceFlush interval

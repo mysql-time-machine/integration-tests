@@ -1,6 +1,5 @@
 package com.booking.replication.it
 
-import com.booking.replication.it.KafkaContainer
 import com.github.dockerjava.api.command.InspectContainerResponse
 import groovy.sql.Sql
 import org.slf4j.Logger

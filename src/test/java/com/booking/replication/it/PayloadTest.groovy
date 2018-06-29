@@ -1,8 +1,4 @@
 package com.booking.replication.it
-
-import com.booking.replication.it.ReplicatorPipeline
-import com.booking.replication.it.ReplicatorTest
-
 /**
  * This test verifies that we get the payloads injected into transactions and
  * that we get them in the same order (when sorted by timestamp) in which
